@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ProPrompter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #f8fbfc, #e2f1f8);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #5D9CEC;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 3em;
+        }
+        #main {
+            margin: 40px auto;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        .block {
+            background: #fff;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .block label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .block input, .block textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        .delete-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #E9573F;
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 0.9em;
+        }
+        #addBlockButton, #copyButton {
+            padding: 15px 30px;
+            background: #4A89DC;
+            color: #fff;
+            border: none;
+            margin: 10px 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: background 0.3s;
+        }
+        #addBlockButton:hover {
+            background: #357ABD;
+        }
+        #copyButton {
+            background: #8CC152;
+        }
+        #copyButton:hover {
+            background: #7ABA3A;
+        }
+        #promptOutput {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            background: #fdfdfd;
+            resize: none;
+        }
+        #buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+    <script>
+        function addBlock() {
+            const container = document.getElementById('blocks');
+            const div = document.createElement('div');
+            div.className = 'block';
+            div.innerHTML = `
+                <button type="button" class="delete-button" onclick="deleteBlock(this)">×</button>
+                <label>Block Name:</label>
+                <input type="text" name="block_name" placeholder="e.g., role" oninput="renderPrompt()">
+                <label>Content:</label>
+                <textarea name="block_content" placeholder="Enter content" oninput="renderPrompt()"></textarea>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function deleteBlock(button) {
+            const block = button.parentElement;
+            block.remove();
+            renderPrompt();
+        }
+
+        function renderPrompt() {
+            const blocks = document.querySelectorAll('#blocks .block');
+            let formattedBlocks = [];
+            blocks.forEach(block => {
+                const name = block.querySelector('input[name="block_name"]').value.trim();
+                const content = block.querySelector('textarea[name="block_content"]').value.trim();
+                if(name && content){
+                    const formattedBlock = `<${name}>\n${content}\n</${name}>`;
+                    formattedBlocks.push(formattedBlock);
+                }
+            });
+            const formattedPrompt = formattedBlocks.join('\n\n');
+            const textarea = document.getElementById('promptOutput');
+            textarea.value = formattedPrompt;
+        }
+
+        function copyPrompt() {
+            const textarea = document.getElementById('promptOutput');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Prompt copied to clipboard!');
+        }
+
+        function scrollToBottom() {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Render prompt on page load
+        window.onload = function() {
+            renderPrompt();
+        };
+    </script>
+</head>
+<body>
+    <header>
+        <h1>ProPrompter</h1>
+    </header>
+    <div id="main">
+        <div id="blocks">
+            <div class="block">
+                <button type="button" class="delete-button" onclick="deleteBlock(this)">×</button>
+                <label>Block Name:</label>
+                <input type="text" name="block_name" placeholder="e.g., role" value="role" oninput="renderPrompt()">
+                <label>Content:</label>
+                <textarea name="block_content" placeholder="Enter role" oninput="renderPrompt()"></textarea>
+            </div>
+            <div class="block">
+                <button type="button" class="delete-button" onclick="deleteBlock(this)">×</button>
+                <label>Block Name:</label>
+                <input type="text" name="block_name" placeholder="e.g., task" value="task" oninput="renderPrompt()">
+                <label>Content:</label>
+                <textarea name="block_content" placeholder="Enter task" oninput="renderPrompt()"></textarea>
+            </div>
+        </div>
+        <div id="buttons">
+            <button type="button" id="addBlockButton" onclick="addBlock()">Add Block</button>
+            <button type="button" id="copyButton" onclick="copyPrompt()">Copy Prompt</button>
+        </div>
+        <textarea id="promptOutput" readonly placeholder="Your formatted prompt will appear here..."></textarea>
+    </div>
+</body>
+</html>
